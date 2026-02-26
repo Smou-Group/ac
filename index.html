@@ -2,92 +2,267 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<title>كشف العائلة</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>حاسبة حمولة التكييف (دكت)</title>
 
 <style>
-body{
-  font-family: Tahoma, Arial;
-  background:#f7f7f7;
-  padding:20px;
-}
-h2{margin-bottom:10px}
-input{
-  padding:10px;
-  width:300px;
-  font-size:16px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:15px;
-  background:#fff;
-}
-th,td{
-  border:1px solid #ccc;
-  padding:10px;
-  text-align:right;
-}
-th{
-  background:#0f5c6e;
-  color:#fff;
-}
-tr:nth-child(even){background:#f2f2f2}
-.note{color:#666;margin-top:8px}
+  :root{--brand:#0f5c6e;}
+  body{font-family: Tahoma, Arial, sans-serif; background:#f7f7f7; padding:20px; margin:0;}
+  .card{max-width:1000px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:18px;}
+  h2{margin:0 0 10px 0;text-align:center}
+  .header{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:8px}
+  .logo{width:110px;max-width:40vw;height:auto;display:block}
+  .brandLine{font-size:13px;color:#666;text-align:center;margin-top:-2px}
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap:12px;
+    margin-top:12px;
+  }
+  .field{
+    background:#fafafa;
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:12px;
+  }
+  label{display:block;font-size:13px;color:#555;margin-bottom:8px}
+  input, select{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    font-size:16px;
+    outline:none;
+    background:#fff;
+  }
+  input:focus, select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(15,92,110,.15)}
+  .note{color:#666;margin-top:10px;text-align:center}
+  .pill{display:inline-block;background:rgba(15,92,110,.08);color:var(--brand);padding:6px 10px;border-radius:999px;font-size:13px}
+  .actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  button{border:0;border-radius:10px;padding:10px 12px;cursor:pointer;font-size:14px}
+  .btn2{background:#eee}
+  .btnPrimary{background:var(--brand);color:#fff}
+  .result{
+    margin-top:14px;
+    border:1px solid #e6e6e6;
+    border-radius:14px;
+    padding:14px;
+    background:#fff;
+  }
+  .resultRow{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .kpi{
+    flex:1;
+    min-width:220px;
+    background:#fafafa;
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:12px;
+  }
+  .kpi .t{font-size:12px;color:#777;margin-bottom:6px}
+  .kpi .v{font-size:22px;font-weight:700;color:#111}
+  .small{font-size:12px;color:#777;text-align:center;margin-top:10px}
+  .warn{color:#b45309}
+  .ok{color:#166534}
+
+  @media (max-width:840px){
+    .grid{grid-template-columns: 1fr;}
+  }
+
+  @media print{
+    body{background:#fff;padding:0}
+    .card{box-shadow:none;border-radius:0;max-width:none;margin:0;padding:0}
+    .actions{display:none !important;}
+    .logo{width:120px}
+    @page{margin:12mm;}
+  }
 </style>
 </head>
 
 <body>
+  <div class="card">
 
-<h2>🔎 البحث باسم العائلة</h2>
+    <div class="header">
+      <img class="logo" src="logo.png" alt="SMOU Logo" />
+      <div class="brandLine">SMOU GROUP</div>
+    </div>
 
-<input id="search" placeholder="اكتب اسم العائلة" />
-<div class="note" id="info">يرجى رفع ملف البيانات</div>
-<br><br>
-<input type="file" id="file" accept=".csv">
+    <h2>❄️ حاسبة حمولة التكييف (بالطن)</h2>
 
-<table id="table" style="display:none">
-  <thead></thead>
-  <tbody></tbody>
-</table>
+    <div class="note" id="info">
+      أدخل الأبعاد واختر نوع الحمل (معامل BTU/م³) وسيتم الحساب تلقائيًا.
+      <span class="pill">1 طن = 12000 BTU/h</span>
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label for="len">طول الغرفة (متر)</label>
+        <input id="len" type="number" step="0.01" min="0" placeholder="مثال: 6" />
+      </div>
+
+      <div class="field">
+        <label for="wid">عرض الغرفة (متر)</label>
+        <input id="wid" type="number" step="0.01" min="0" placeholder="مثال: 5.3" />
+      </div>
+
+      <div class="field">
+        <label for="hei">ارتفاع الغرفة (متر)</label>
+        <input id="hei" type="number" step="0.01" min="0" placeholder="مثال: 3" />
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <label for="mode">نوع الحمل / معامل التحويل (BTU لكل متر مكعب)</label>
+        <select id="mode">
+          <option value="170">عزل جيد + شمس قليلة (تقريبًا 170)</option>
+          <option value="190" selected>عادي (تقريبًا 190)</option>
+          <option value="210">واجهة زجاجية / شمس أعلى (تقريبًا 210)</option>
+          <option value="230">شمس قوية + عزل ضعيف/أجهزة كثيرة (تقريبًا 230)</option>
+          <option value="custom">أدخل معامل يدوي</option>
+        </select>
+      </div>
+
+      <div class="field hidden" id="customWrap" style="grid-column: 1 / -1;">
+        <label for="factor">المعامل اليدوي (BTU/م³)</label>
+        <input id="factor" type="number" step="1" min="50" placeholder="مثال: 200" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn2" id="clearBtn" type="button">مسح</button>
+      <button class="btn2" id="printBtn" type="button">طباعة</button>
+      <button class="btnPrimary" id="fillExample" type="button">مثال غرفتك 6×5.3×3</button>
+    </div>
+
+    <div class="result" id="resultBox">
+      <div class="resultRow">
+        <div class="kpi">
+          <div class="t">الحجم (م³)</div>
+          <div class="v" id="vol">—</div>
+        </div>
+        <div class="kpi">
+          <div class="t">الحمولة (BTU/h)</div>
+          <div class="v" id="btu">—</div>
+        </div>
+        <div class="kpi">
+          <div class="t">الحمولة (طن تبريد)</div>
+          <div class="v" id="tr">—</div>
+        </div>
+      </div>
+      <div class="small" id="hint"></div>
+    </div>
+
+    <div class="small">
+      ملاحظة: هذه حسبة تقديرية سريعة (Rule of Thumb). للنتيجة الدقيقة يلزم حسابات Heat Load (CLTD/ASHRAE) وأخذ نوع الزجاج والاتجاه والعزل والتهوية بالحسبان.
+    </div>
+  </div>
 
 <script>
-let data=[], headers=[];
-const FAMILY_COL = "العائلة";
+  const lenEl = document.getElementById("len");
+  const widEl = document.getElementById("wid");
+  const heiEl = document.getElementById("hei");
+  const modeEl = document.getElementById("mode");
+  const customWrap = document.getElementById("customWrap");
+  const factorEl = document.getElementById("factor");
 
-document.getElementById("file").addEventListener("change", async e=>{
-  const text = await e.target.files[0].text();
-  const lines = text.trim().split("\n");
-  headers = lines[0].split(",");
-  data = lines.slice(1).map(l=>{
-    let obj={};
-    l.split(",").forEach((v,i)=>obj[headers[i]]=v);
-    return obj;
-  });
-  document.getElementById("info").innerText="تم تحميل البيانات";
-});
+  const volEl = document.getElementById("vol");
+  const btuEl = document.getElementById("btu");
+  const trEl  = document.getElementById("tr");
+  const hintEl = document.getElementById("hint");
 
-document.getElementById("search").addEventListener("input",()=>{
-  const q = document.getElementById("search").value.trim();
-  const table = document.getElementById("table");
-  const thead = table.querySelector("thead");
-  const tbody = table.querySelector("tbody");
+  const fmt = (n, d=2) => (isFinite(n) ? n.toLocaleString("en-US", {maximumFractionDigits:d}) : "—");
 
-  if(!q){ table.style.display="none"; return; }
-
-  const norm = s => (s||"").toString().trim().replace(/\s+/g," ");
-const res = data.filter(r => norm(r[FAMILY_COL]).includes(norm(q)));
-
-  if(!res.length){
-    document.getElementById("info").innerText="لا توجد نتائج";
-    table.style.display="none";
-    return;
+  function getFactor(){
+    if (modeEl.value === "custom"){
+      const f = parseFloat(factorEl.value);
+      return isFinite(f) && f > 0 ? f : NaN;
+    }
+    return parseFloat(modeEl.value);
   }
 
-  thead.innerHTML="<tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr>";
-  tbody.innerHTML=res.map(r=>"<tr>"+headers.map(h=>`<td>${r[h]||""}</td>`).join("")+"</tr>").join("");
-  table.style.display="table";
-  document.getElementById("info").innerText=`عدد النتائج: ${res.length}`;
-});
+  function calc(){
+    const L = parseFloat(lenEl.value);
+    const W = parseFloat(widEl.value);
+    const H = parseFloat(heiEl.value);
+    const F = getFactor();
+
+    if (!isFinite(L) || !isFinite(W) || !isFinite(H) || L<=0 || W<=0 || H<=0){
+      volEl.textContent = "—";
+      btuEl.textContent = "—";
+      trEl.textContent = "—";
+      hintEl.textContent = "أدخل الطول والعرض والارتفاع لحساب الحمولة.";
+      hintEl.className = "small";
+      return;
+    }
+
+    if (!isFinite(F) || F<=0){
+      volEl.textContent = fmt(L*W*H);
+      btuEl.textContent = "—";
+      trEl.textContent = "—";
+      hintEl.textContent = "اختر معامل صحيح أو أدخله يدويًا.";
+      hintEl.className = "small warn";
+      return;
+    }
+
+    const volume = L*W*H;        // m3
+    const btu = volume * F;      // BTU/h (تقريبي)
+    const tr  = btu / 12000;     // Ton
+
+    volEl.textContent = fmt(volume);
+    btuEl.textContent = fmt(btu, 0);
+    trEl.textContent  = fmt(tr);
+
+    // إرشاد سريع للتقريب لأقرب نصف طن
+    const rounded = Math.round(tr * 2) / 2;
+    const msg = `اقتراح سريع: قرّبها إلى ${fmt(rounded)} طن (تقريب لأقرب 0.5 طن) حسب توفر الأجهزة.`;
+    hintEl.textContent = msg;
+    hintEl.className = "small ok";
+  }
+
+  modeEl.addEventListener("change", ()=>{
+    if (modeEl.value === "custom"){
+      customWrap.classList.remove("hidden");
+      factorEl.value = factorEl.value || "200";
+      factorEl.focus();
+    } else {
+      customWrap.classList.add("hidden");
+    }
+    calc();
+  });
+
+  [lenEl, widEl, heiEl, factorEl].forEach(el => el.addEventListener("input", calc));
+
+  document.getElementById("clearBtn").addEventListener("click", ()=>{
+    lenEl.value = "";
+    widEl.value = "";
+    heiEl.value = "";
+    modeEl.value = "190";
+    customWrap.classList.add("hidden");
+    factorEl.value = "";
+    calc();
+  });
+
+  document.getElementById("printBtn").addEventListener("click", ()=>{
+    window.print();
+  });
+
+  document.getElementById("fillExample").addEventListener("click", ()=>{
+    lenEl.value = "6";
+    widEl.value = "5.3";
+    heiEl.value = "3";
+    modeEl.value = "210"; // واجهة زجاجية
+    customWrap.classList.add("hidden");
+    factorEl.value = "";
+    calc();
+  });
+
+  // تشغيل أولي
+  calc();
 </script>
 
 </body>
